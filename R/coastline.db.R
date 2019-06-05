@@ -99,13 +99,13 @@ coastline.db = function( DS="eastcoast_gadm", crs="+init=epsg:4326", p=NULL, lev
     dir.create( dir.local, recursive=TRUE, showWarnings=FALSE )
 
     gadmsp = GADMTools::gadm_sp.loadCountries( fileNames="CAN", level=1, basefile=dir.local )
-    maritimes = GADMTools::subset(gadmsp, level=1, regions=c("Nova Scotia", "Prince Edward Island", "Newfoundland and Labrador", "Québec","New Brunswick"  )  )
+    maritimes = GADMTools::gadm_subset(gadmsp, level=1, regions=c("Nova Scotia", "Prince Edward Island", "Newfoundland and Labrador", "Québec","New Brunswick"  )  )
 
     gadmsp = GADMTools::gadm_sp.loadCountries( fileNames="USA", level=1, basefile=dir.local )
     if (0) {
       listNames(gadmsp, level=1)
     }
-    useast = GADMTools::subset(gadmsp, level=1, regions=c("Connecticut", "Delaware", "Florida",  "Georgia",
+    useast = GADMTools::gadm_subset(gadmsp, level=1, regions=c("Connecticut", "Delaware", "Florida",  "Georgia",
       "Maine",  "Maryland", "Massachusetts","New Hampshire", "New Jersey", "New York" ,"North Carolina",
       "Pennsylvania", "Rhode Island", "South Carolina",  "Virginia"  )  )
 
