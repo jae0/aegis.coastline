@@ -105,6 +105,8 @@ coastline.db = function( DS="eastcoast_gadm", crs="+init=epsg:4326", p=NULL, lev
     if (0) {
       listNames(gadmsp, level=1)
     }
+    message( "Creating new versions .. " )
+
     useast = GADMTools::gadm_subset(gadmsp, level=1, regions=c("Connecticut", "Delaware", "Florida",  "Georgia",
       "Maine",  "Maryland", "Massachusetts","New Hampshire", "New Jersey", "New York" ,"North Carolina",
       "Pennsylvania", "Rhode Island", "South Carolina",  "Virginia"  )  )
@@ -133,9 +135,9 @@ coastline.db = function( DS="eastcoast_gadm", crs="+init=epsg:4326", p=NULL, lev
       )
       bd = SpatialPolygons(
         list(Polygons(list(bd), ID = "bb")),
-        proj4string=sp::CRS(crs)
+        proj4string=sp::CRS("+init=epsg:4326")
       )
-      bd = spTransform( bd, sp::CRS(crs) )
+      bd = spTransform( bd, proj4string(out)  )
 
       # trim
       out = rgeos::gIntersection( bd, out, drop_lower_td=TRUE, byid=TRUE ) # crop
