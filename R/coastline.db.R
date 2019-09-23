@@ -1,6 +1,7 @@
 
-coastline.db = function( DS="eastcoast_gadm", crs="+init=epsg:4326", p=NULL, level=4, xlim=NULL, ylim=NULL, redo=FALSE,
-  spatial.domain="canada.east.highres", coastline.dir=project.datadirectory( "aegis", "polygons", "coastline" ), ... ) {
+
+coastline.db = function( DS="eastcoast_gadm", crs=projection_proj4string("lonlat_wgs84"), p=NULL, level=4, xlim=NULL, ylim=NULL, redo=FALSE,
+  spatial_domain="canada.east.highres", coastline.dir=project.datadirectory( "aegis", "polygons", "coastline" ), ... ) {
 
   #\\various methods to obtain coastline data
 
@@ -9,7 +10,7 @@ coastline.db = function( DS="eastcoast_gadm", crs="+init=epsg:4326", p=NULL, lev
   if (!file.exists( coastline.dir) ) dir.create( coastline.dir, showWarnings=FALSE , recursive=TRUE )
 
   if (is.null(p)) p=list()
-  if (!exists("spatial.domain", p) ) p$spatial.domain = spatial.domain
+  if (!exists("spatial_domain", p) ) p$spatial_domain = spatial_domain
 
   p = spatial_parameters( p=p, ...)
 
@@ -53,7 +54,7 @@ coastline.db = function( DS="eastcoast_gadm", crs="+init=epsg:4326", p=NULL, lev
     fn = file.path( coastline.dir, "gshhg", paste( fn.root, fn.suffix, sep="_" ) )
     # local saves to speed things up a little
 
-    fn.loc = paste( fn, p$spatial.domain, "rdata", sep="." )
+    fn.loc = paste( fn, p$spatial_domain, "rdata", sep="." )
     out = NULL
     if ( !grepl("redo", DS) ){
       if ( file.exists( fn.loc) ) {
@@ -83,7 +84,7 @@ coastline.db = function( DS="eastcoast_gadm", crs="+init=epsg:4326", p=NULL, lev
 
   if (DS=="eastcoast_gadm") {
 
-    fn = file.path( coastline.dir, paste( "eastcoast_gadm", p$spatial.domain, "rdata", sep="." ) )
+    fn = file.path( coastline.dir, paste( "eastcoast_gadm", p$spatial_domain, "rdata", sep="." ) )
     if ( !redo ) {
       if ( file.exists(fn) )  {
         load( fn )
@@ -135,7 +136,7 @@ coastline.db = function( DS="eastcoast_gadm", crs="+init=epsg:4326", p=NULL, lev
       )
       bd = SpatialPolygons(
         list(Polygons(list(bd), ID = "bb")),
-        proj4string=sp::CRS("+init=epsg:4326")
+        proj4string=sp::CRS(projection_proj4string("lonlat_wgs84"))
       )
       bd = spTransform( bd, proj4string(out)  )
 
@@ -180,7 +181,7 @@ coastline.db = function( DS="eastcoast_gadm", crs="+init=epsg:4326", p=NULL, lev
     coast = maps::map( database="worldHires", regions=c("Canada", "US"), fill=TRUE,
                 ylim=ylim, xlim=xlim, resolution=0, plot=FALSE)
     coastSp = map2SpatialLines( coast, IDs=sapply(coast$names, function(x) "0"),  # force all to be "0" elevation
-                proj4string= sp::CRS("+init=epsg:4326"))
+                proj4string= sp::CRS(projection_proj4string("lonlat_wgs84")))
     save( coastSp, file=fn.coastline ) ## save spherical
     if ( ! proj4string( coastSp ) == crs ) coastSp = spTransform( coastSp, sp::CRS(crs) )
     return( coastSp )
@@ -202,10 +203,10 @@ coastline.db = function( DS="eastcoast_gadm", crs="+init=epsg:4326", p=NULL, lev
                 ylim=ylim, xlim=xlim, resolution=0, plot=FALSE)
 
     coastSp = map2SpatialPolygons( coast, IDs=sapply(coast$names, function(x) x[1]),
-                proj4string= sp::CRS("+init=epsg:4326") )
+                proj4string= sp::CRS(projection_proj4string("lonlat_wgs84")) )
 
 #      coastSp = map2SpatialPolygons( coast, IDs=sapply(coast$names, function(x) x[1]),
-#                  proj4string= raster::crs("+init=epsg:4326"))
+#                  proj4string= raster::crs(projection_proj4string("lonlat_wgs84")))
     save( coastSp, file=fn.coastpolygon )
     if ( ! proj4string( coastSp) == crs ) coastSp = spTransform( coastSp, sp::CRS(crs) )
     return( coastSp )

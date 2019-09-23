@@ -1,6 +1,6 @@
 coastline_layout = function( p, xy.scalebar=c(-2e5, 1.5e5), depths=c( 100, 200, 300, 400, 500, 600, 700 ), plotmap=FALSE, redo=FALSE ) {
 
-  fn = file.path( project.datadirectory("aegis", "polygons", "coastline" ), paste( "coastline_layout", p$spatial.domain, "rdata", sep="." ) )
+  fn = file.path( project.datadirectory("aegis", "polygons", "coastline" ), paste( "coastline_layout", p$spatial_domain, "rdata", sep="." ) )
   out = NULL
 
   if (!redo) {
@@ -20,13 +20,13 @@ coastline_layout = function( p, xy.scalebar=c(-2e5, 1.5e5), depths=c( 100, 200, 
     list(Polygons(list(bounding_domain), ID = "bb")),
     proj4string=sp::CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")  # expect lon/lat
   )
-  bounding_domain = spTransform( bounding_domain, sp::CRS(p$internal.crs) )
+  bounding_domain = spTransform( bounding_domain, sp::CRS(p$aegis_proj4string_planar_km) )
 
   # coastline for mapping via spplot
 
   # coast = aegis_coastline::coastline.db( p=p, DS=" gshhg coastline highres", no.clip=TRUE )
   coast = coastline.db( p=p, DS="eastcoast_gadm" )
-  coast = spTransform( coast, sp::CRS(p$internal.crs) )
+  coast = spTransform( coast, sp::CRS(p$aegis_proj4string_planar_km) )
   coast = gSimplify(coast, tol = 0.01) # simplify the polgons a bit (km)
   coast = rgeos::gIntersection( bounding_domain, coast, drop_lower_td=TRUE, byid=TRUE, checkValidity=TRUE ) # crop
   # sum(gIsValid(coast, byid=TRUE)==FALSE) # check if any bad polys?
@@ -46,7 +46,7 @@ coastline_layout = function( p, xy.scalebar=c(-2e5, 1.5e5), depths=c( 100, 200, 
   #
   # depth contours
   isobs = aegis.bathymetry::isobath.db( p=p, depths=depths  )
-  isobs = spTransform( isobs, sp::CRS(p$internal.crs) )
+  isobs = spTransform( isobs, sp::CRS(p$aegis_proj4string_planar_km) )
   isobs = rgeos::gIntersection( bounding_domain, isobs, drop_lower_td=TRUE, byid=TRUE ) # crop
   # sum(gIsValid(isobs, byid=TRUE)==FALSE) # check if any bad polys?
   # isobs = gBuffer(isobs, byid=TRUE, width=0)
@@ -67,7 +67,7 @@ coastline_layout = function( p, xy.scalebar=c(-2e5, 1.5e5), depths=c( 100, 200, 
     plot(coast, col="grey95")
     plot(isobs, add=TRUE, col="lightblue")
     sppoly = aegis.polygons::maritimes_groundfish_strata( timeperiod="pre2014", returntype="polygons" )
-    sppoly = spTransform( sppoly, sp::CRS(p$internal.crs) )
+    sppoly = spTransform( sppoly, sp::CRS(p$aegis_proj4string_planar_km) )
     plot(sppoly, col="transparent", add=TRUE)
   }
 
