@@ -56,14 +56,18 @@
   maps::map.scale( -57, 42, ratio =FALSE )
 
 
+
   # -----------------------
-  # make an sp layout
+  # make an sp layout ... used with spplot based maps
   require(sp)
   require(rgeos)
   require(aegis.bathymetry)
   require(stmv)
 
   p = spatial_parameters( spatial_domain="snowcrab" )
+  p = spatial_parameters( spatial_domain="SSE" )
+
   p$boundingbox = list( xlim=p$corners$lon, ylim=p$corners$lat) # bounding box for plots using spplot
 
-  aegis.coastline::coastline_layout( p=p, redo=TRUE )
+  oo = aegis.coastline::coastline_layout( p=p, redo=TRUE )
+  names(oo)
