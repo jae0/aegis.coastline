@@ -1,5 +1,5 @@
 
-
+  require( aegis.coastline)
   coast = coastline.db( spatial_domain="canada.east", DS="eastcoast_gadm", redo=TRUE ) # default method is GADM based
 
   # remaining are examples
@@ -54,3 +54,16 @@
 
   sp::compassRose( -55, 43, cex= 0.75 )
   maps::map.scale( -57, 42, ratio =FALSE )
+
+
+  # -----------------------
+  # make an sp layout
+  require(sp)
+  require(rgeos)
+  require(aegis.bathymetry)
+  require(stmv)
+
+  p = spatial_parameters( spatial_domain="snowcrab" )
+  p$boundingbox = list( xlim=p$corners$lon, ylim=p$corners$lat) # bounding box for plots using spplot
+
+  aegis.coastline::coastline_layout( p=p, redo=TRUE )
