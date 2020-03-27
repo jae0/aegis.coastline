@@ -45,7 +45,9 @@ coastline_layout = function( p, xy.scalebar=c(-2e5, 1.5e5), depths=c( 100, 200, 
   coast = sp::spChFIDs( coast,  polyid ) #fix id's
   #
   # depth contours
-  isobs = aegis.bathymetry::isobath.db( p=p, depths=depths  )
+  piso = p
+  piso$datadir = NULL  # force use of default data
+  isobs = aegis.bathymetry::isobath.db( p=piso, depths=depths  )
   isobs = spTransform( isobs, sp::CRS(p$aegis_proj4string_planar_km) )
   isobs = rgeos::gIntersection( bounding_domain, isobs, drop_lower_td=TRUE, byid=TRUE ) # crop
   # sum(gIsValid(isobs, byid=TRUE)==FALSE) # check if any bad polys?
