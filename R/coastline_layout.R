@@ -66,7 +66,7 @@ coastline_layout = function( p, xy.scalebar=c(-2e5, 1.5e5), depths=c( 100, 200, 
   if (plotmap) {
     plot(coast, col="grey95")
     plot(isobs, add=TRUE, col="lightblue")
-    sppoly = aegis.polygons::maritimes_groundfish_strata( timeperiod="pre2014", returntype="polygons" )
+    sppoly = aegis.polygons::maritimes_groundfish_strata( areal_units_timeperiod="pre2014", returntype="polygons" )
     sppoly = spTransform( sppoly, sp::CRS(p$aegis_proj4string_planar_km) )
     plot(sppoly, col="transparent", add=TRUE)
   }
