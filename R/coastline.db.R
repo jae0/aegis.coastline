@@ -1,6 +1,6 @@
 
 
-coastline.db = function( DS="eastcoast_gadm", crs=projection_proj4string("lonlat_wgs84"), p=NULL, level=4, xlim=NULL, ylim=NULL, redo=FALSE,
+coastline.db = function( DS="eastcoast_gadm", project_to=projection_proj4string("lonlat_wgs84"), p=NULL, level=4, xlim=NULL, ylim=NULL, redo=FALSE,
   spatial_domain="canada.east.highres", coastline.dir=project.datadirectory( "aegis", "polygons", "coastline" ), ... ) {
 
   #\\various methods to obtain coastline data
@@ -59,7 +59,7 @@ coastline.db = function( DS="eastcoast_gadm", crs=projection_proj4string("lonlat
     if ( !grepl("redo", DS) ){
       if ( file.exists( fn.loc) ) {
         load( fn.loc )
-        if ( ! proj4string( out ) == crs ) out = spTransform( out, sp::CRS(crs) )
+        if ( ! proj4string( out ) == project_to ) out = spTransform( out, sp::CRS(project_to) )
         return (out)
     }}
     # if here then none found or we are redoing .. create a new one
@@ -76,7 +76,7 @@ coastline.db = function( DS="eastcoast_gadm", crs=projection_proj4string("lonlat
     print( "The above is not a fatal error .. check your data: " )
     print (out)
     if ( length(out) > 0 ) save (out, file=fn.loc, compress=TRUE )
-    if ( ! proj4string( out ) ==  crs ) out = spTransform( out, sp::CRS(crs) )
+    if ( ! proj4string( out ) ==  project_to ) out = spTransform( out, sp::CRS(project_to) )
     return(out)
   }
 
@@ -88,7 +88,7 @@ coastline.db = function( DS="eastcoast_gadm", crs=projection_proj4string("lonlat
     if ( !redo ) {
       if ( file.exists(fn) )  {
         load( fn )
-        if ( ! proj4string( out ) ==  crs ) out = spTransform( out, sp::CRS(crs) )
+        if ( ! proj4string( out ) ==  project_to ) out = spTransform( out, sp::CRS(project_to) )
         return (out)
       }
     }
@@ -114,7 +114,7 @@ coastline.db = function( DS="eastcoast_gadm", crs=projection_proj4string("lonlat
 
     out = rbind( maritimes$spdf, useast$spdf )
 
-    if ( ! proj4string( out ) ==  crs ) out = spTransform( out, sp::CRS(crs) )
+    if ( ! proj4string( out ) ==  project_to ) out = spTransform( out, sp::CRS(project_to) )
 
     bb = NULL
     if ((!is.null(xlim) && !is.null(ylim)) ) {
@@ -174,7 +174,7 @@ coastline.db = function( DS="eastcoast_gadm", crs=projection_proj4string("lonlat
     if ( !redo | DS != "mapdata.coastLine.redo" ) {
       if ( file.exists( fn.coastline) ) {
         load( fn.coastline)
-        if ( ! proj4string( coastSp ) ==  crs ) coastSp = spTransform( coastSp, sp::CRS(crs) )
+        if ( ! proj4string( coastSp ) ==  project_to ) coastSp = spTransform( coastSp, sp::CRS(project_to) )
         if (DS=="mapdata.coastLine") return( coastSp )
       }
     }
@@ -183,7 +183,7 @@ coastline.db = function( DS="eastcoast_gadm", crs=projection_proj4string("lonlat
     coastSp = map2SpatialLines( coast, IDs=sapply(coast$names, function(x) "0"),  # force all to be "0" elevation
                 proj4string= sp::CRS(projection_proj4string("lonlat_wgs84")))
     save( coastSp, file=fn.coastline ) ## save spherical
-    if ( ! proj4string( coastSp ) == crs ) coastSp = spTransform( coastSp, sp::CRS(crs) )
+    if ( ! proj4string( coastSp ) == project_to ) coastSp = spTransform( coastSp, sp::CRS(project_to) )
     return( coastSp )
   }
 
@@ -194,7 +194,7 @@ coastline.db = function( DS="eastcoast_gadm", crs=projection_proj4string("lonlat
     if (  !redo |  DS != "mapdata.coastPolygon.redo") {
       if ( file.exists( fn.coastpolygon)) {
         load( fn.coastpolygon)
-        if ( ! proj4string( coastSp ) == crs ) coastSp = spTransform( coastSp, sp::CRS(crs) )
+        if ( ! proj4string( coastSp ) == project_to ) coastSp = spTransform( coastSp, sp::CRS(project_to) )
         if (DS=="mapdata.coastPolygon") return( coastSp )
       }
     }
@@ -208,7 +208,7 @@ coastline.db = function( DS="eastcoast_gadm", crs=projection_proj4string("lonlat
 #      coastSp = map2SpatialPolygons( coast, IDs=sapply(coast$names, function(x) x[1]),
 #                  proj4string= raster::crs(projection_proj4string("lonlat_wgs84")))
     save( coastSp, file=fn.coastpolygon )
-    if ( ! proj4string( coastSp) == crs ) coastSp = spTransform( coastSp, sp::CRS(crs) )
+    if ( ! proj4string( coastSp) == project_to ) coastSp = spTransform( coastSp, sp::CRS(project_to) )
     return( coastSp )
   }
 
