@@ -24,8 +24,8 @@ coastline_layout = function( p, xy.scalebar=c(-2e5, 1.5e5), depths=c( 100, 200, 
 
   # coastline for mapping via spplot
 
-  # coast = aegis_coastline::coastline.db( p=p, DS=" gshhg coastline highres", no.clip=TRUE )
-  coast = coastline.db( p=p, DS="eastcoast_gadm" )
+  # coast = aegis_coastline::coastline_db( p=p, DS=" gshhg coastline highres", no.clip=TRUE )
+  coast = coastline_db( p=p, DS="eastcoast_gadm" )
   coast = spTransform( coast, sp::CRS(p$aegis_proj4string_planar_km) )
   coast = gSimplify(coast, tol = 0.01) # simplify the polgons a bit (km)
   coast = rgeos::gIntersection( bounding_domain, coast, drop_lower_td=TRUE, byid=TRUE, checkValidity=TRUE ) # crop

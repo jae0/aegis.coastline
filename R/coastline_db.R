@@ -1,6 +1,6 @@
 
 
-coastline.db = function( DS="eastcoast_gadm", project_to=projection_proj4string("lonlat_wgs84"), p=NULL, level=4, xlim=NULL, ylim=NULL, redo=FALSE,
+coastline_db = function( DS="eastcoast_gadm", project_to=projection_proj4string("lonlat_wgs84"), p=NULL, level=4, xlim=NULL, ylim=NULL, redo=FALSE,
   spatial_domain="canada.east.highres", coastline.dir=project.datadirectory( "aegis", "polygons", "coastline" ), ... ) {
 
   #\\various methods to obtain coastline data
@@ -34,7 +34,7 @@ coastline.db = function( DS="eastcoast_gadm", project_to=projection_proj4string(
       #\\ GSHHG is probably the best world-wide standard for coastline, etc
       #\\ 'A Global Self-consistent, Hierarchical, High-resolution Geography' Database
       #\\ http://www.soest.hawaii.edu/pwessel/gshhg/
-      print( "If this fails, you might need to update filename manually in coastline.db( DS='gshhg.download' )" )
+      print( "If this fails, you might need to update filename manually in coastline_db( DS='gshhg.download' )" )
       download.file( url=fn.gshhs, destfile=fn.local )
       unzip( fn.local, exdir=file.path( coastline.dir, "gshhg" )  )
       return( "Download finished")
@@ -67,7 +67,7 @@ coastline.db = function( DS="eastcoast_gadm", project_to=projection_proj4string(
     if (!file.exists(fn)) {
       print( "Global Self-consistent, Hierarchical, High-resolution Geography' Database")
       print( "not found ... Downloading to bio.data/polygons/coastline/..." )
-      coastline.db( DS="gshhg.download")
+      coastline_db( DS="gshhg.download")
     }
     print ("Don't panic about  the following 'error'.. Rgshhs is just being fussy:")
     out = maptools::getRgshhsMap( fn, xlim=xlim, ylim=ylim, level=level, verbose=FALSE, ... )
