@@ -8,60 +8,32 @@ coastline_layout = function( p, xy.scalebar=c(-2e5, 1.5e5), depths=c( 100, 200, 
     if( !is.null(out) ) return(out)
   }
 
-  bounding_domain = Polygon( matrix( c(
+  bounding_domain = matrix( c(
     min(p$boundingbox[["xlim"]]), min(p$boundingbox[["ylim"]]),
     min(p$boundingbox[["xlim"]]), max(p$boundingbox[["ylim"]]),
     max(p$boundingbox[["xlim"]]), max(p$boundingbox[["ylim"]]),
     max(p$boundingbox[["xlim"]]), min(p$boundingbox[["ylim"]]),
     min(p$boundingbox[["xlim"]]), min(p$boundingbox[["ylim"]])
-  ), ncol = 2, byrow = TRUE ) )
+  ), ncol = 2, byrow = TRUE )
 
-  bounding_domain = SpatialPolygons(
-    list(Polygons(list(bounding_domain), ID = "bb")),
-    proj4string=sp::CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")  # expect lon/lat
+  bounding_domain = (
+    st_multipoint(bounding_domain)
+    %>% st_sfc()
+    %>% st_cast("POLYGON" )
+    %>% st_make_valid()
   )
-  bounding_domain = spTransform( bounding_domain, sp::CRS(p$aegis_proj4string_planar_km) )
+  st_crs(bounding_domain) =st_crs( projection_proj4string("lonlat_wgs84") )
+  bounding_domain = st_transform( bounding_domain, st_crs(p$aegis_proj4string_planar_km) )
 
   # coastline for mapping via spplot
-
-  # coast = aegis_coastline::coastline_db( p=p, DS=" gshhg coastline highres", no.clip=TRUE )
   coast = coastline_db( p=p, DS="eastcoast_gadm" )
-  coast = spTransform( coast, sp::CRS(p$aegis_proj4string_planar_km) )
-  coast = gSimplify(coast, tol = 0.01) # simplify the polgons a bit (km)
-  coast = rgeos::gIntersection( bounding_domain, coast, drop_lower_td=TRUE, byid=TRUE, checkValidity=TRUE ) # crop
-  # sum(gIsValid(coast, byid=TRUE)==FALSE) # check if any bad polys?
-  # coast = gBuffer(coast, byid=TRUE, width=0)
-
-
-  polyid = gsub( "^bb[[:space:]]", "", names(coast) )
-  oo = which(duplicated(polyid) )
-  if (length(oo)>0) {
-    for ( i in 1:length(oo) ) {
-      j = which( polyid == polyid[oo[i]] )
-      for ( k in 2:length(j)) polyid[j[k]] = paste( polyid[j[k]], k, sep="_")
-    }
-  }
-
-  coast = sp::spChFIDs( coast,  polyid ) #fix id's
+  coast = st_transform( coast, st_crs(p$aegis_proj4string_planar_km) )
+  coast = st_intersection( coast, bounding_domain )
 
   # depth contours
   isobs = aegis.bathymetry::isobath_db( p=p, depths=depths  )
-  isobs = spTransform( isobs, sp::CRS(p$aegis_proj4string_planar_km) )
-  isobs = rgeos::gIntersection( bounding_domain, isobs, drop_lower_td=TRUE, byid=TRUE ) # crop
-  # sum(gIsValid(isobs, byid=TRUE)==FALSE) # check if any bad polys?
-  # isobs = gBuffer(isobs, byid=TRUE, width=0)
-  # plot(isobs)
-
-  isoid = gsub( "^bb[[:space:]]", "", names(isobs) )
-  oo = which(duplicated(isoid) )
-  if (length(oo)>0) {
-    for ( i in 1:length(oo) ) {
-      j = which( isoid == isoid[oo[i]] )
-      for ( k in 2:length(j)) isoid[j[k]] = paste( isoid[j[k]], k, sep="_")
-    }
-  }
-
-  isobs = sp::spChFIDs( isobs,  isoid ) #fix id's
+  isobs = st_transform( isobs, st_crs(p$aegis_proj4string_planar_km) )
+  isobs = st_intersection( isobs, bounding_domain )
 
   if (plotmap) {
     plot(coast, col="grey95")
@@ -73,8 +45,8 @@ coastline_layout = function( p, xy.scalebar=c(-2e5, 1.5e5), depths=c( 100, 200, 
 
   out = list(
     coastLayout = list(
-      list("sp.polygons", coast, fill=FALSE, col="gray", first=FALSE ), # outline of NS for plotting with spplot
-      list("sp.lines", isobs, col="lightgray" ), # outline of NS for plotting with spplot
+      list("sp.polygons", as(coast, "Spatial"), fill=FALSE, col="gray", first=FALSE ), # outline of NS for plotting with spplot
+      list("sp.lines", as(isobs, "Spatial"), col="lightgray" ), # outline of NS for plotting with spplot
       # list("SpatialPolygonsRescale", layout.north.arrow(), offset=xy.arrow, scale = 100000),
       list("SpatialPolygonsRescale", layout.scale.bar(), offset =xy.scalebar, scale = 100000, fill=c("transparent","gray") ),
       list("sp.text", xy.scalebar+c(0,-10000), "0"),

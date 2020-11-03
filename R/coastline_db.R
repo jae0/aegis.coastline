@@ -59,7 +59,7 @@ coastline_db = function( DS="eastcoast_gadm", project_to=projection_proj4string(
     if ( !grepl("redo", DS) ){
       if ( file.exists( fn.loc) ) {
         load( fn.loc )
-        if ( ! proj4string( out ) == project_to ) out = spTransform( out, sp::CRS(project_to) )
+        if ( ! st_crs( out ) == st_crs(project_to) ) out = st_transform( out, st_crs(project_to) )
         return (out)
     }}
     # if here then none found or we are redoing .. create a new one
@@ -75,8 +75,9 @@ coastline_db = function( DS="eastcoast_gadm", project_to=projection_proj4string(
     print ("")
     print( "The above is not a fatal error .. check your data: " )
     print (out)
+    out = as( out, "sf" )
     if ( length(out) > 0 ) save (out, file=fn.loc, compress=TRUE )
-    if ( ! proj4string( out ) ==  project_to ) out = spTransform( out, sp::CRS(project_to) )
+    if ( ! st_crs( out ) == st_crs(project_to) ) out = st_transform( out, st_crs(project_to) )
     return(out)
   }
 
@@ -88,7 +89,7 @@ coastline_db = function( DS="eastcoast_gadm", project_to=projection_proj4string(
     if ( !redo ) {
       if ( file.exists(fn) )  {
         load( fn )
-        if ( ! proj4string( out ) ==  project_to ) out = spTransform( out, sp::CRS(project_to) )
+        if ( ! st_crs( out ) == st_crs(project_to) ) out = st_transform( out, st_crs(project_to) )
         return (out)
       }
     }
@@ -99,22 +100,13 @@ coastline_db = function( DS="eastcoast_gadm", project_to=projection_proj4string(
     dir.local = file.path( coastline.dir, "polygons", "gadm" )
     dir.create( dir.local, recursive=TRUE, showWarnings=FALSE )
 
-    gadmsp = GADMTools::gadm_sp.loadCountries( fileNames="CAN", level=1, basefile=dir.local )
-    maritimes = GADMTools::gadm_subset(gadmsp, level=1, regions=c("Nova Scotia", "Prince Edward Island", "Newfoundland and Labrador", "Québec","New Brunswick"  )  )
+    maritimes = GADMTools::gadm_subset(GADMTools::gadm_sf.loadCountries( fileNames="CAN", level=1, basefile=dir.local, simplify=0.01  ),
+      level=1, regions=c("Nova Scotia", "Prince Edward Island", "Newfoundland and Labrador", "Québec","New Brunswick"  )  )$sf
 
-    gadmsp = GADMTools::gadm_sp.loadCountries( fileNames="USA", level=1, basefile=dir.local )
-    if (0) {
-      listNames(gadmsp, level=1)
-    }
-    message( "Creating new versions .. " )
-
-    useast = GADMTools::gadm_subset(gadmsp, level=1, regions=c("Connecticut", "Delaware", "Florida",  "Georgia",
-      "Maine",  "Maryland", "Massachusetts","New Hampshire", "New Jersey", "New York" ,"North Carolina",
-      "Pennsylvania", "Rhode Island", "South Carolina",  "Virginia"  )  )
-
-    out = rbind( maritimes$spdf, useast$spdf )
-
-    if ( ! proj4string( out ) ==  project_to ) out = spTransform( out, sp::CRS(project_to) )
+    useast = GADMTools::gadm_subset( GADMTools::gadm_sf.loadCountries( fileNames="USA", level=1, basefile=dir.local, simplify=0.01  ),
+      level=1, regions=c("Connecticut", "Delaware", "Florida",  "Georgia",
+        "Maine",  "Maryland", "Massachusetts","New Hampshire", "New Jersey", "New York" ,"North Carolina",
+        "Pennsylvania", "Rhode Island", "South Carolina",  "Vermont", "Virginia"  )  )$sf
 
     bb = NULL
     if ((!is.null(xlim) && !is.null(ylim)) ) {
@@ -125,45 +117,55 @@ coastline_db = function( DS="eastcoast_gadm", project_to=projection_proj4string(
       if (!is.null(p$bb) ) bb = p$bb
     }
 
-    if (!is.null(bb)) {
-      bd = Polygon( matrix( c(
+      bd =
+        matrix( c(
           min(bb[["xlim"]]), min(bb[["ylim"]]),
           min(bb[["xlim"]]), max(bb[["ylim"]]),
           max(bb[["xlim"]]), max(bb[["ylim"]]),
           max(bb[["xlim"]]), min(bb[["ylim"]]),
           min(bb[["xlim"]]), min(bb[["ylim"]])
         ), ncol = 2, byrow = TRUE )
+
+      bd= (
+        st_multipoint(bd)
+        %>% st_sfc()
+        %>% st_cast("POLYGON" )
+        %>% st_make_valid()
       )
-      bd = SpatialPolygons(
-        list(Polygons(list(bd), ID = "bb")),
-        proj4string=sp::CRS(projection_proj4string("lonlat_wgs84"))
-      )
-      bd = spTransform( bd, proj4string(out)  )
+    st_crs(bd) =st_crs( projection_proj4string("lonlat_wgs84") )
 
-      # trim
-      out = rgeos::gIntersection( bd, out, drop_lower_td=TRUE, byid=TRUE ) # crop
-      # sum(gIsValid(out, byid=TRUE)==FALSE) # check if any bad polys?
-      # out = gBuffer(out, byid=TRUE, width=0)
-      # plot(out)
 
-      polyid = gsub( "^bb[[:space:]]", "", names(out) )
-      oo = which(duplicated(polyid) )
-      if (length(oo)>0) {
-        for ( i in 1:length(oo) ) {
-          j = which( polyid == polyid[oo[i]] )
-          for ( k in 2:length(j)) polyid[j[k]] = paste( polyid[j[k]], k, sep="_")
-        }
-      }
-      out = sp::spChFIDs( out,  polyid ) #fix id's
-    }
+    useast = (
+      st_intersection( useast, bd )
+      %>% st_buffer(0.01)
+      %>% st_union()
+      %>% st_cast("POLYGON" )
+      %>% st_union()
+      %>% st_make_valid()
+    )
 
-    # out = gIntersection( out, bboxout, byid = TRUE )
-    # sum(gIsValid(out, byid=TRUE)==FALSE) # check if any bad polys?
-    # out = gBuffer(out, byid=TRUE, width=0)
-    # plot(out)
-    # out = sp::spChFIDs( out, "NovaScotia" ) #fix id's
+    maritimes = (
+      st_intersection( maritimes, bd )
+      %>% st_buffer(0.01)
+      %>% st_union()
+      %>% st_cast("POLYGON" )
+      %>% st_union()
+      %>% st_make_valid()
+    )
+
+    out = (
+      st_union( maritimes, useast)
+      %>% st_simplify()
+      %>% st_buffer(0)
+      %>% st_cast("POLYGON" )
+      %>% st_union()
+      %>% st_make_valid()
+    )
 
     save(out, file=fn, compress=TRUE)
+
+    if ( ! st_crs( out ) == st_crs(project_to) ) out = st_transform( out, st_crs(project_to) )
+
     return(out)
   }
 
@@ -174,7 +176,7 @@ coastline_db = function( DS="eastcoast_gadm", project_to=projection_proj4string(
     if ( !redo | DS != "mapdata.coastLine.redo" ) {
       if ( file.exists( fn.coastline) ) {
         load( fn.coastline)
-        if ( ! proj4string( coastSp ) ==  project_to ) coastSp = spTransform( coastSp, sp::CRS(project_to) )
+        if ( ! st_crs( coastSp ) == st_crs( project_to) ) coastSp = spTransform( coastSp, sp::CRS(project_to) )
         if (DS=="mapdata.coastLine") return( coastSp )
       }
     }
@@ -182,8 +184,9 @@ coastline_db = function( DS="eastcoast_gadm", project_to=projection_proj4string(
                 ylim=ylim, xlim=xlim, resolution=0, plot=FALSE)
     coastSp = map2SpatialLines( coast, IDs=sapply(coast$names, function(x) "0"),  # force all to be "0" elevation
                 proj4string= sp::CRS(projection_proj4string("lonlat_wgs84")))
+    coastSp = as(coastSp, "sf")
     save( coastSp, file=fn.coastline ) ## save spherical
-    if ( ! proj4string( coastSp ) == project_to ) coastSp = spTransform( coastSp, sp::CRS(project_to) )
+    if ( ! st_crs( coastSp ) == st_crs(project_to) ) coastSp = st_transform( coastSp, st_crs(project_to) )
     return( coastSp )
   }
 
@@ -194,7 +197,7 @@ coastline_db = function( DS="eastcoast_gadm", project_to=projection_proj4string(
     if (  !redo |  DS != "mapdata.coastPolygon.redo") {
       if ( file.exists( fn.coastpolygon)) {
         load( fn.coastpolygon)
-        if ( ! proj4string( coastSp ) == project_to ) coastSp = spTransform( coastSp, sp::CRS(project_to) )
+        if ( ! st_crs( coastSp ) == st_crs(project_to) ) coastSp = spTransform( coastSp, sp::CRS(project_to) )
         if (DS=="mapdata.coastPolygon") return( coastSp )
       }
     }
@@ -207,8 +210,9 @@ coastline_db = function( DS="eastcoast_gadm", project_to=projection_proj4string(
 
 #      coastSp = map2SpatialPolygons( coast, IDs=sapply(coast$names, function(x) x[1]),
 #                  proj4string= raster::crs(projection_proj4string("lonlat_wgs84")))
+    coastSp = as(coastSp, "sf")
     save( coastSp, file=fn.coastpolygon )
-    if ( ! proj4string( coastSp) == project_to ) coastSp = spTransform( coastSp, sp::CRS(project_to) )
+    if ( ! st_crs( coastSp ) == st_crs(project_to) ) coastSp = st_transform( coastSp, st_crs(project_to) )
     return( coastSp )
   }
 
