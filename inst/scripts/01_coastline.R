@@ -1,6 +1,8 @@
 
   require( aegis.coastline)
-  coast = coastline_db( spatial_domain="canada.east", DS="eastcoast_gadm", redo=TRUE ) # default method is GADM based
+  for (r in c( "SSE", "snowcrab", "canada.east.superhighres", "canada.east.highres", "canada.east" ) ){
+    coast = coastline_db( spatial_domain=r, DS="eastcoast_gadm", redo=TRUE ) # default method is GADM based
+  }
 
   # remaining are examples
 
@@ -71,3 +73,4 @@
 
   oo = aegis.coastline::coastline_layout( p=p, redo=TRUE )
   names(oo)
+
