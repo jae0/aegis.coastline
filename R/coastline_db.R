@@ -172,6 +172,7 @@ coastline_db = function( DS="eastcoast_gadm", project_to=projection_proj4string(
   # -----------------------------
 
   if (DS %in% c( "mapdata.coastLine", "mapdata.coastLine.redo")) {
+    RLibrary( "maps", "mapdata", "maptools", "rgdal", "sf" )
     fn.coastline = file.path( coastline.dir, "mapdata.coastline.rdata" )
     if ( !redo | DS != "mapdata.coastLine.redo" ) {
       if ( file.exists( fn.coastline) ) {
@@ -193,6 +194,7 @@ coastline_db = function( DS="eastcoast_gadm", project_to=projection_proj4string(
   # ------------------------
 
   if (DS %in% c("mapdata.coastPolygon", "mapdata.coastPolygon.redo") ) {
+    RLibrary( "maps", "mapdata", "maptools", "rgdal", "sf" )
     fn.coastpolygon = file.path( coastline.dir, "mapdata.coastpolygon.rdata" )
     if (  !redo |  DS != "mapdata.coastPolygon.redo") {
       if ( file.exists( fn.coastpolygon)) {
@@ -201,7 +203,6 @@ coastline_db = function( DS="eastcoast_gadm", project_to=projection_proj4string(
         if (DS=="mapdata.coastPolygon") return( coastSp )
       }
     }
-    RLibrary( "maps", "mapdata", "maptools", "rgdal" )
     coast = maps::map( database="worldHires", regions=c("Canada", "US"), fill=TRUE,
                 ylim=ylim, xlim=xlim, resolution=0, plot=FALSE)
 

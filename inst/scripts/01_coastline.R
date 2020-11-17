@@ -1,47 +1,57 @@
 
   require( aegis.coastline)
+  require(sf)
+
   for (r in c( "SSE", "snowcrab", "canada.east.superhighres", "canada.east.highres", "canada.east" ) ){
     coast = coastline_db( spatial_domain=r, DS="eastcoast_gadm", redo=TRUE ) # default method is GADM based
   }
 
   # remaining are examples
 
-  # worldHires coastlines from mapdata (still pretty crude ..)
-  coast = coastline_db( spatial_domain="canada.east", DS="mapdata.coastLine.redo" ) # flatten into one
-  coast = coastline_db( spatial_domain="canada.east", DS="mapdata.coastPolygon.redo" )
+  if (0) {
+    # no longer used
 
-  # GSHHG coastline data (NOAA) -- best quality data
-  # download the current version of the GSHHG coastline data
-  #  coastline_db( "gshhg.download" )  << ---- RUN THIS if you want to refresh the local copy from NOAA
+    # worldHires coastlines from mapdata (still pretty crude ..)
+    coast = coastline_db( spatial_domain="canada.east", DS="mapdata.coastLine.redo" ) # flatten into one
+    coast = coastline_db( spatial_domain="canada.east", DS="mapdata.coastPolygon.redo" )
+  }
 
-  # these are generated on the fly the first pass .. p must contain corner$lon/lat
-  # and ensure they are the largest domain for your use (here "canada.east.highres" )
-  # actual data saved will have a buffer around them to try and account for spherical -> rectangular warping
-  # ignore error messages ("no shore line in selection...")
-  #  .. conversion to spatial data frames is verbose and fussy
+  if (0) {
+    # no longer used
 
-  # pre-construct the main grids and resoultions to save some time, any others will be made on the fly
-  coastline_db ( spatial_domain="canada.east", DS="gshhg.download" )
+    # GSHHG coastline data (NOAA) -- best quality data
+    # download the current version of the GSHHG coastline data
+    #  coastline_db( "gshhg.download" )  << ---- RUN THIS if you want to refresh the local copy from NOAA
 
-  grids =c( "canada.east.superhighres", "canada.east.highres", "canada.east", "SSE", "SSE.mpa" , "snowcrab")
-  for ( gr in grids ){
-    u = coastline_db ( spatial_domain=gr, DS="gshhg coastline full redo", no.clip=TRUE  ) # full is all data
-    u = coastline_db ( spatial_domain=gr, DS="gshhg coastline highres redo ", no.clip=TRUE  ) # highres is almost all data
-    u = coastline_db ( spatial_domain=gr, DS="gshhg coastline intermediate redo", no.clip=TRUE  ) # medium res
-    u = coastline_db ( spatial_domain=gr, DS="gshhg coastline low redo ", no.clip=TRUE  ) # low res
-    u = coastline_db ( spatial_domain=gr, DS="gshhg coastline crude redo ", no.clip=TRUE  ) # crude is very rough
+    # these are generated on the fly the first pass .. p must contain corner$lon/lat
+    # and ensure they are the largest domain for your use (here "canada.east.highres" )
+    # actual data saved will have a buffer around them to try and account for spherical -> rectangular warping
+    # ignore error messages ("no shore line in selection...")
+    #  .. conversion to spatial data frames is verbose and fussy
 
-    # note you can also get rivers and political boundaries .. these are spatial Lines
-    u = coastline_db ( spatial_domain=gr, DS="gshhg rivers full redo " ) # crude is very rough
-    u = coastline_db ( spatial_domain=gr, DS="gshhg rivers highres redo " ) # crude is very rough
-    u = coastline_db ( spatial_domain=gr, DS="gshhg rivers intermediate redo " ) # crude is very rough
+    # pre-construct the main grids and resoultions to save some time, any others will be made on the fly
+    coastline_db ( spatial_domain="canada.east", DS="gshhg.download" )
 
-    u = coastline_db ( spatial_domain=gr, DS="gshhg borders full redo " ) # crude is very rough
-    u = coastline_db ( spatial_domain=gr, DS="gshhg borders highres redo " ) # crude is very rough
-    u = coastline_db ( spatial_domain=gr, DS="gshhg borders intermediate redo " ) # crude is very rough
+    grids =c( "canada.east.superhighres", "canada.east.highres", "canada.east", "SSE", "SSE.mpa" , "snowcrab")
+    for ( gr in grids ){
+      u = coastline_db ( spatial_domain=gr, DS="gshhg coastline full redo", no.clip=TRUE  ) # full is all data
+      u = coastline_db ( spatial_domain=gr, DS="gshhg coastline highres redo ", no.clip=TRUE  ) # highres is almost all data
+      u = coastline_db ( spatial_domain=gr, DS="gshhg coastline intermediate redo", no.clip=TRUE  ) # medium res
+      u = coastline_db ( spatial_domain=gr, DS="gshhg coastline low redo ", no.clip=TRUE  ) # low res
+      u = coastline_db ( spatial_domain=gr, DS="gshhg coastline crude redo ", no.clip=TRUE  ) # crude is very rough
 
-    # to call without p$corners:
-    u = coastline_db ( spatial_domain=gr, DS="gshhg coastline full redo", xlim=p$corners$lon, ylim=p$corners$lat ) # full is all data
+      # note you can also get rivers and political boundaries .. these are spatial Lines
+      u = coastline_db ( spatial_domain=gr, DS="gshhg rivers full redo " ) # crude is very rough
+      u = coastline_db ( spatial_domain=gr, DS="gshhg rivers highres redo " ) # crude is very rough
+      u = coastline_db ( spatial_domain=gr, DS="gshhg rivers intermediate redo " ) # crude is very rough
+
+      u = coastline_db ( spatial_domain=gr, DS="gshhg borders full redo " ) # crude is very rough
+      u = coastline_db ( spatial_domain=gr, DS="gshhg borders highres redo " ) # crude is very rough
+      u = coastline_db ( spatial_domain=gr, DS="gshhg borders intermediate redo " ) # crude is very rough
+
+      # to call without p$corners:
+      u = coastline_db ( spatial_domain=gr, DS="gshhg coastline full redo", xlim=p$corners$lon, ylim=p$corners$lat ) # full is all data
+    }
   }
 
 
