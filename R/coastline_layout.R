@@ -1,11 +1,28 @@
-coastline_layout = function( p, xy.scalebar=c(-2e5, 1.5e5), depths=c( 100, 200, 300, 400, 500, 600, 700 ), plotmap=FALSE, redo=FALSE ) {
+coastline_layout = function( p, xy.scalebar=c(-2e5, 1.5e5), depths=c( 100, 200, 300, 400, 500, 600, 700 ), plotmap=FALSE, redo=FALSE, returntype="sf" ) {
 
   fn = file.path( project.datadirectory("aegis", "polygons", "coastline" ), paste( "coastline_layout", p$spatial_domain, "rdata", sep="." ) )
   out = NULL
 
   if (!redo) {
     if (file.exists(fn)) load(fn)
-    if( !is.null(out) ) return(out)
+
+    if( !is.null(out) ) {
+      if (returntype=="sp") {
+        outsp = list(
+          coastLayout = list(
+            list("sp.polygons", as(out$coast, "Spatial"), fill=FALSE, col="gray", first=FALSE ), # outline of NS for plotting with spplot
+            list("sp.lines", as(out$isobs, "Spatial"), col="lightgray" ), # outline of NS for plotting with spplot
+            # list("SpatialPolygonsRescale", layout.north.arrow(), offset=xy.arrow, scale = 100000),
+            list("SpatialPolygonsRescale", layout.scale.bar(), offset =xy.scalebar, scale = 100000, fill=c("transparent","gray") ),
+            list("sp.text", xy.scalebar+c(0,-10000), "0"),
+            list("sp.text", xy.scalebar+c(100000 ,-10000), "100 km")
+          ),
+          bounding_domain=bounding_domain
+        )
+        return(outsp)
+      }
+      return(out)
+    }
   }
 
   bounding_domain = matrix( c(
@@ -44,19 +61,13 @@ coastline_layout = function( p, xy.scalebar=c(-2e5, 1.5e5), depths=c( 100, 200, 
   }
 
   out = list(
-    coastLayout = list(
-      list("sp.polygons", as(coast, "Spatial"), fill=FALSE, col="gray", first=FALSE ), # outline of NS for plotting with spplot
-      list("sp.lines", as(isobs, "Spatial"), col="lightgray" ), # outline of NS for plotting with spplot
-      # list("SpatialPolygonsRescale", layout.north.arrow(), offset=xy.arrow, scale = 100000),
-      list("SpatialPolygonsRescale", layout.scale.bar(), offset =xy.scalebar, scale = 100000, fill=c("transparent","gray") ),
-      list("sp.text", xy.scalebar+c(0,-10000), "0"),
-      list("sp.text", xy.scalebar+c(100000 ,-10000), "100 km")
-    ),
-    bounding_domain=bounding_domain
+    coast=coast,
+    isobs=isobs,
+    depths=depths,
+    bounding_domain=bounding_domain,
+    xy.scalebar=xy.scalebar
   )
 
   save(out, file=fn, compress=TRUE)
-
-  return(out)
 
 }
