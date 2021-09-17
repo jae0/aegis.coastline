@@ -48,7 +48,7 @@ coastline_layout = function( p, xy.scalebar=c(-2e5, 1.5e5), depths=c( 100, 200, 
   coast = st_intersection( coast, bounding_domain )
 
   # depth contours
-  isobs = aegis.bathymetry::isobath_db( p=p, depths=depths  )
+  isobs = aegis.bathymetry::isobath_db( depths=depths  )
   isobs = st_transform( isobs, st_crs(p$aegis_proj4string_planar_km) )
   isobs = st_intersection( isobs, bounding_domain )
 

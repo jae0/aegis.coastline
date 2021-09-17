@@ -57,7 +57,7 @@
 
   #example plot
   depths = c( 100, 200, 250, 300, 400, 500)
-  plygn = isobath_db( p=p, DS="isobath", depths=depths  )  # this can only be run after bathymetry.r
+  plygn = isobath_db( DS="isobath", depths=depths  )  # this can only be run after bathymetry.r
 
   coast = coastline_db( spatial_domain="canada.east", DS=" gshhg coastline highres", no.clip=TRUE )
   plot( coast, col="transparent", border="steelblue2" ,
