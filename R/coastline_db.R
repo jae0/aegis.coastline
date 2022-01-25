@@ -96,22 +96,34 @@ coastline_db = function( DS="eastcoast_gadm", project_to=projection_proj4string(
 
     require(GADMTools)
 
-    message( "Downloading .. " )
+    message( "Downloading .. \n" )
+    message( "Warnings about 'old-style crs object detected ...' ' can be ignored .. the maintainer needs to update their files" )
     dir.local = file.path( coastline.dir, "polygons", "gadm" )
     dir.create( dir.local, recursive=TRUE, showWarnings=FALSE )
 
-    maritimes = GADMTools::gadm_subset(GADMTools::gadm_sf.loadCountries( fileNames="CAN", level=1, basefile=dir.local, simplify=0.01  ),
+    maritimes = GADMTools::gadm_subset(GADMTools::gadm_sf.loadCountries( fileNames="CAN", level=1, basefile=dir.local   ),
       level=1, regions=c("Nova Scotia", "Prince Edward Island", "Newfoundland and Labrador", "Québec","New Brunswick"  )  )$sf
+    
 
-    useast = GADMTools::gadm_subset( GADMTools::gadm_sf.loadCountries( fileNames="USA", level=1, basefile=dir.local, simplify=0.01  ),
+    useast = GADMTools::gadm_subset( GADMTools::gadm_sf.loadCountries( fileNames="USA", level=1, basefile=dir.local  ),
       level=1, regions=c("Connecticut", "Delaware", "Florida",  "Georgia",
         "Maine",  "Maryland", "Massachusetts","New Hampshire", "New Jersey", "New York" ,"North Carolina",
         "Pennsylvania", "Rhode Island", "South Carolina",  "Vermont", "Virginia"  )  )$sf
 
+    utm = sf::st_crs("+proj=utm +zone=20 +ellps=GRS80 +datum=NAD83 +units=km") # units m!
+
+    st_crs(maritimes) = st_crs(projection_proj4string("lonlat_wgs84") )
+    maritimes = sf::st_transform(maritimes, crs=utm)
+
+    st_crs(useast) = st_crs(projection_proj4string("lonlat_wgs84") )
+    useast = sf::st_transform(useast, crs=utm) 
+    
+    
     bb = NULL
     if ((!is.null(xlim) && !is.null(ylim)) ) {
       bb = list( xlim =xlim , ylim=ylim) # bounding box for plots using spplot
     }
+
 
     if (is.null(bb)) {
       if (!is.null(p$bb) ) bb = p$bb
@@ -133,22 +145,22 @@ coastline_db = function( DS="eastcoast_gadm", project_to=projection_proj4string(
         %>% st_make_valid()
       )
     st_crs(bd) =st_crs( projection_proj4string("lonlat_wgs84") )
-
+    bd = sf::st_transform(bd, crs=utm) 
 
     useast = (
       st_intersection( useast, bd )
-      %>% st_buffer(0.01)
+      %>% st_buffer(0.5)
       %>% st_union()
-      %>% st_cast("POLYGON" )
+      %>% st_cast("MULTIPOLYGON" )
       %>% st_union()
       %>% st_make_valid()
     )
 
     maritimes = (
       st_intersection( maritimes, bd )
-      %>% st_buffer(0.01)
+      %>% st_buffer(0.5)
       %>% st_union()
-      %>% st_cast("POLYGON" )
+      %>% st_cast("MULTIPOLYGON" )
       %>% st_union()
       %>% st_make_valid()
     )
@@ -156,11 +168,13 @@ coastline_db = function( DS="eastcoast_gadm", project_to=projection_proj4string(
     out = (
       st_union( maritimes, useast)
       %>% st_simplify()
-      %>% st_buffer(0)
-      %>% st_cast("POLYGON" )
+      %>% st_buffer(0.5)
+      %>% st_cast("MULTIPOLYGON" )
       %>% st_union()
       %>% st_make_valid()
     )
+
+    bd = sf::st_transform(bd, crs=st_crs(projection_proj4string("lonlat_wgs84") )) 
 
     save(out, file=fn, compress=TRUE)
 
