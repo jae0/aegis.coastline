@@ -70,6 +70,9 @@ coastline_db = function( DS="eastcoast_gadm", project_to=projection_proj4string(
       coastline_db( DS="gshhg.download")
     }
     print ("Don't panic about  the following 'error'.. Rgshhs is just being fussy:")
+
+    message( "FIXE ME :: maptools is deprecated" )
+
     out = maptools::getRgshhsMap( fn, xlim=xlim, ylim=ylim, level=level, verbose=FALSE, ... )
     print ("")
     print ("")
@@ -186,6 +189,9 @@ coastline_db = function( DS="eastcoast_gadm", project_to=projection_proj4string(
   # -----------------------------
 
   if (DS %in% c( "mapdata.coastLine", "mapdata.coastLine.redo")) {
+    
+    message( "FIXE ME :: maptools is deprecated" )
+
     RLibrary( "maps", "mapdata", "maptools", "rgdal", "sf" )
     fn.coastline = file.path( coastline.dir, "mapdata.coastline.rdata" )
     if ( !redo | DS != "mapdata.coastLine.redo" ) {
@@ -208,7 +214,10 @@ coastline_db = function( DS="eastcoast_gadm", project_to=projection_proj4string(
   # ------------------------
 
   if (DS %in% c("mapdata.coastPolygon", "mapdata.coastPolygon.redo") ) {
-    RLibrary( "maps", "mapdata", "maptools", "rgdal", "sf" )
+  
+    message( "FIXE ME :: maptools is deprecated" )
+
+    # RLibrary( "maps", "mapdata", "maptools", "rgdal", "sf" )
     fn.coastpolygon = file.path( coastline.dir, "mapdata.coastpolygon.rdata" )
     if (  !redo |  DS != "mapdata.coastPolygon.redo") {
       if ( file.exists( fn.coastpolygon)) {
