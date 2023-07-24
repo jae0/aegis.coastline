@@ -8,6 +8,7 @@ coastline_layout = function( p, xy.scalebar=c(-2e5, 1.5e5), depths=c( 100, 200, 
 
     if( !is.null(out) ) {
       if (returntype=="sp") {
+        message("NOTE: sp is deprecated")
         outsp = list(
           coastLayout = list(
             list("sp.polygons", as(out$coast, "Spatial"), fill=FALSE, col="gray", first=FALSE ), # outline of NS for plotting with spplot
