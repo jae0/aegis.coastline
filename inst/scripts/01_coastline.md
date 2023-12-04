@@ -1,9 +1,9 @@
-# Example useage of aegis.coastline
 
-The R library [aegis.coastline](https://github.com/jae0/aegis.coastline) helps to create basic polygons of coastlines derived from GADMTools. Here, we loop through a few geographic areas of interest and build polygons. Modify them as required.
+# Example usage of aegis.coastline
+
+The R library [aegis.coastline](https://github.com/jae0/aegis.coastline) helps to create basic polygons of coastlines. Here, we loop through a few geographic areas of interest and build polygons. Modify them as required.
 
 ```r
-  require( GADMTools )
   require( sf )
   require( aegis.coastline )
 
@@ -86,4 +86,27 @@ The methods are deprecated, but here in case you require these other data source
 
 ```
 
+ 
+
+## Installation
+
+
+To install, run the following:
+
+```r
+  remotes::install_github( "jae0/aegis")  # helper functions
+  remotes::install_github( "jae0/aegis.coastline")
+``` 
+
+You probably will want to have an Rprofile set up properly such as:
+
+```r
+homedir = path.expand("~")
+code_root = file.path( homedir, "bio" )   ### replace with correct path to the parent directory of your git-projects
+data_root = file.path( homedir, "bio.data" )   ### replace with correct path to your data
+
+require( aegis )
+require( aegis.coastline )
+
+```
  
