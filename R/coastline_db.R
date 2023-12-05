@@ -190,9 +190,9 @@ coastline_db = function( DS="eastcoast_gadm", project_to=projection_proj4string(
 
   if (DS %in% c( "mapdata.coastLine", "mapdata.coastLine.redo")) {
     
-    message( "FIXE ME :: maptools is deprecated" )
+    message( "FIXE ME :: maptools, rgdal are deprecated" )
 
-    RLibrary( "maps", "mapdata", "maptools", "rgdal", "sf" )
+#    RLibrary( "maps", "mapdata", "maptools", "rgdal", "sf" )
     fn.coastline = file.path( coastline.dir, "mapdata.coastline.rdata" )
     if ( !redo | DS != "mapdata.coastLine.redo" ) {
       if ( file.exists( fn.coastline) ) {
