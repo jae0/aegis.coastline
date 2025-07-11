@@ -54,11 +54,11 @@ coastline_db = function( DS="eastcoast_gadm", project_to=projection_proj4string(
     fn = file.path( coastline.dir, "gshhg", paste( fn.root, fn.suffix, sep="_" ) )
     # local saves to speed things up a little
 
-    fn.loc = paste( fn, p$spatial_domain, "rdata", sep="." )
+    fn.loc = paste( fn, p$spatial_domain, "rdz", sep="." )
     out = NULL
     if ( !grepl("redo", DS) ){
       if ( file.exists( fn.loc) ) {
-        load( fn.loc )
+        out = read_write_fast( fn.loc )
         if ( ! st_crs( out ) == st_crs(project_to) ) out = st_transform( out, st_crs(project_to) )
         return (out)
     }}
@@ -79,7 +79,7 @@ coastline_db = function( DS="eastcoast_gadm", project_to=projection_proj4string(
     print( "The above is not a fatal error .. check your data: " )
     print (out)
     out = as( out, "sf" )
-    if ( length(out) > 0 ) save (out, file=fn.loc, compress=TRUE )
+    if ( length(out) > 0 ) read_write_fast (out, file=fn.loc )
     if ( ! st_crs( out ) == st_crs(project_to) ) out = st_transform( out, st_crs(project_to) )
     return(out)
   }
@@ -88,10 +88,10 @@ coastline_db = function( DS="eastcoast_gadm", project_to=projection_proj4string(
 
   if (DS=="eastcoast_gadm") {
 
-    fn = file.path( coastline.dir, paste( "eastcoast_gadm", p$spatial_domain, "rdata", sep="." ) )
+    fn = file.path( coastline.dir, paste( "eastcoast_gadm", p$spatial_domain, "rdz", sep="." ) )
     if ( !redo ) {
       if ( file.exists(fn) )  {
-        load( fn )
+        out = read_write_fast( fn )
         if ( ! st_crs( out ) == st_crs(project_to) ) out = st_transform( out, st_crs(project_to) )
         return (out)
       }
@@ -179,7 +179,7 @@ coastline_db = function( DS="eastcoast_gadm", project_to=projection_proj4string(
 
     bd = sf::st_transform(bd, crs=st_crs(projection_proj4string("lonlat_wgs84") )) 
 
-    save(out, file=fn, compress=TRUE)
+    read_write_fast(out, file=fn)
 
     if ( ! st_crs( out ) == st_crs(project_to) ) out = st_transform( out, st_crs(project_to) )
 
@@ -193,10 +193,10 @@ coastline_db = function( DS="eastcoast_gadm", project_to=projection_proj4string(
     message( "FIXE ME :: maptools, rgdal are deprecated" )
 
 #    RLibrary( "maps", "mapdata", "maptools", "rgdal", "sf" )
-    fn.coastline = file.path( coastline.dir, "mapdata.coastline.rdata" )
+    fn.coastline = file.path( coastline.dir, "mapdata.coastline.rdz" )
     if ( !redo | DS != "mapdata.coastLine.redo" ) {
       if ( file.exists( fn.coastline) ) {
-        load( fn.coastline)
+        coastSp = read_write_fast( fn.coastline)
         if ( ! st_crs( coastSp ) == st_crs( project_to) ) coastSp = spTransform( coastSp, sp::CRS(project_to) )
         if (DS=="mapdata.coastLine") return( coastSp )
       }
@@ -206,7 +206,7 @@ coastline_db = function( DS="eastcoast_gadm", project_to=projection_proj4string(
     coastSp = map2SpatialLines( coast, IDs=sapply(coast$names, function(x) "0"),  # force all to be "0" elevation
                 proj4string= sp::CRS(projection_proj4string("lonlat_wgs84")))
     coastSp = as(coastSp, "sf")
-    save( coastSp, file=fn.coastline ) ## save spherical
+    read_write_fast( coastSp, file=fn.coastline ) ## save spherical
     if ( ! st_crs( coastSp ) == st_crs(project_to) ) coastSp = st_transform( coastSp, st_crs(project_to) )
     return( coastSp )
   }
@@ -218,10 +218,10 @@ coastline_db = function( DS="eastcoast_gadm", project_to=projection_proj4string(
     message( "FIXE ME :: maptools is deprecated" )
 
     # RLibrary( "maps", "mapdata", "maptools", "rgdal", "sf" )
-    fn.coastpolygon = file.path( coastline.dir, "mapdata.coastpolygon.rdata" )
+    fn.coastpolygon = file.path( coastline.dir, "mapdata.coastpolygon.rdz" )
     if (  !redo |  DS != "mapdata.coastPolygon.redo") {
       if ( file.exists( fn.coastpolygon)) {
-        load( fn.coastpolygon)
+        cpastSp = read_write_fast( fn.coastpolygon)
         if ( ! st_crs( coastSp ) == st_crs(project_to) ) coastSp = spTransform( coastSp, sp::CRS(project_to) )
         if (DS=="mapdata.coastPolygon") return( coastSp )
       }
@@ -235,7 +235,7 @@ coastline_db = function( DS="eastcoast_gadm", project_to=projection_proj4string(
 #      coastSp = map2SpatialPolygons( coast, IDs=sapply(coast$names, function(x) x[1]),
 #                  proj4string= raster::crs(projection_proj4string("lonlat_wgs84")))
     coastSp = as(coastSp, "sf")
-    save( coastSp, file=fn.coastpolygon )
+    read_write_fast( coastSp, file=fn.coastpolygon )
     if ( ! st_crs( coastSp ) == st_crs(project_to) ) coastSp = st_transform( coastSp, st_crs(project_to) )
     return( coastSp )
   }

@@ -1,10 +1,10 @@
 coastline_layout = function( p, xy.scalebar=c(-2e5, 1.5e5), depths=c( 100, 200, 300, 400, 500, 600, 700 ), plotmap=FALSE, redo=FALSE, returntype="sf" ) {
 
-  fn = file.path( project.datadirectory("aegis", "polygons", "coastline" ), paste( "coastline_layout", p$spatial_domain, "rdata", sep="." ) )
+  fn = file.path( project.datadirectory("aegis", "polygons", "coastline" ), paste( "coastline_layout", p$spatial_domain, "rdz", sep="." ) )
   out = NULL
 
   if (!redo) {
-    if (file.exists(fn)) load(fn)
+    if (file.exists(fn)) out = read_write_fast(fn)
 
     if( !is.null(out) ) {
       if (returntype=="sp") {
@@ -69,6 +69,6 @@ coastline_layout = function( p, xy.scalebar=c(-2e5, 1.5e5), depths=c( 100, 200, 
     xy.scalebar=xy.scalebar
   )
 
-  save(out, file=fn, compress=TRUE)
+  read_write_fast(out, file=fn)
 
 }
