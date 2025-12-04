@@ -1,7 +1,16 @@
 
 
-coastline_db = function( DS="eastcoast_gadm", project_to=projection_proj4string("lonlat_wgs84"), p=NULL, level=4, xlim=NULL, ylim=NULL, redo=FALSE,
-  spatial_domain="canada.east.highres", coastline.dir=project.datadirectory( "aegis", "polygons", "coastline" ), ... ) {
+coastline_db = function( 
+  DS="eastcoast_gadm", 
+  project_to=projection_proj4string("lonlat_wgs84"), 
+  p=NULL, 
+  level=4, 
+  xlim=NULL, 
+  ylim=NULL, 
+  redo=FALSE,
+  spatial_domain="canada.east.highres", 
+  coastline.dir=project.datadirectory( "aegis", "polygons", "coastline" ), 
+  ... ) {
 
   #\\various methods to obtain coastline data
 
@@ -85,6 +94,37 @@ coastline_db = function( DS="eastcoast_gadm", project_to=projection_proj4string(
   }
 
   # -----------------------------
+
+  if (DS=="rnaturalearth") {
+
+    fn = file.path( coastline.dir, paste( "rnaturalearth", p$spatial_domain, "rdz", sep="." ) )
+    if ( !redo ) {
+      if ( file.exists(fn) )  {
+        out = read_write_fast( fn )
+        if ( ! st_crs( out ) == st_crs(project_to) ) out = st_transform( out, st_crs(project_to) )
+        return (out)
+      }
+    }
+     
+    utm = sf::st_crs("+proj=utm +zone=20 +ellps=GRS80 +datum=NAD83 +units=km") # units m!
+  
+    plot_crs=projection_proj4string("lonlat_wgs84")
+
+    xlim=c(-85,-35)
+    ylim=c(35, 65)
+
+    cl = st_transform( polygons_rnaturalearth(xlim=xlim, ylim=ylim), st_crs(plot_crs) )
+    cl = sf::st_transform(cl, crs=utm) 
+  
+    out = st_make_valid(cl)
+
+    read_write_fast(out, file=fn)
+
+    if ( ! st_crs( out ) == st_crs(project_to) ) out = st_transform( out, st_crs(project_to) )
+
+  }
+
+
 
   if (DS=="eastcoast_gadm") {
 
@@ -177,7 +217,6 @@ coastline_db = function( DS="eastcoast_gadm", project_to=projection_proj4string(
       %>% st_make_valid()
     )
 
-    bd = sf::st_transform(bd, crs=st_crs(projection_proj4string("lonlat_wgs84") )) 
 
     read_write_fast(out, file=fn)
 
